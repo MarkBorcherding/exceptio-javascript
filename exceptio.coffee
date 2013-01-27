@@ -18,6 +18,20 @@ encode = (obj)  ->
 url = (application, appKey) ->
   "http://except.io/applications/#{application}/errors?app_key=#{appKey}"
 
+parseError = (error, file, line) ->
+  type = error?.constructor?.name
+  return [type, error.message, error.stack ] unless type == 'String'
+
+  [type, error, backtrace] = ['', error, 'No Backtrace']
+
+  backtrace = "#{file}:#{line}" if file? or line?
+
+  if matches = /^Uncaught ([^:]+):(.*)$/.exec error
+    [type, error] = matches[1..2]
+
+  [type, error, backtrace]
+
+
 ExceptIO =
   appKey: ""
   application: ""
@@ -26,17 +40,8 @@ ExceptIO =
   configure: (@appKey, @application, @debug = false, @environment = 'production') ->
   log: (error, file = error.file, line = error.line) ->
     request_url = window.location.href
-    message = error?.message or error
-    type = error?.constructor?.name
-    type = '' if type == 'String' # Just ignore this type
 
-    backtrace = if error.stack?
-                  error.stack
-                else
-                  if file? or line?
-                    "#{file}:#{line}"
-                  else
-                    'No Backtrace'
+    [type, message, backtrace ] = parseError error, file, line
 
     body = encode
         message: message
@@ -48,7 +53,6 @@ ExceptIO =
     if @debug
       console.log url(@application, @appKey), body
     else
-      console.log 'logging error', error, body
       xhr = httpRequest()
       xhr.open 'POST', url(@application, @appKey)
       xhr.setRequestHeader 'Content-Type', 'application/x-www-form-urlencoded'
