@@ -7,6 +7,28 @@ A JavaScript client for [Except.io](http://except.io)
 
 Very very pre-alpha. Pretty much just ignore for now.
 
+## Install
+
+```html
+<script src="exceptio.js"
+  data-app-key='e6ce3360b2533165'
+  data-application='markborcherding-angular-seed'
+  data-environment='development'></script>
+```
+
+```javascript
+ExceptIO.log('testing raw call');
+
+try {
+  caught_in_a_catch_block();
+} catch (e) {
+  console.log(e.stack);
+  ExceptIO.log(e);
+}
+
+caught_by_window_onerror();
+```
+
 ## License
 
 The MIT License (MIT)
