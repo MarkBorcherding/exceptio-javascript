@@ -15,26 +15,38 @@ encode = (obj)  ->
     "#{encodeURIComponent prop}=#{encodeURIComponent obj[prop]}"
   values.join "&"
 
-url = ->
-  "except.io/applications/#{application}/errors"
+url = (application, apiKey) ->
+  "https://except.io/applications/#{application}/errors?api_key=#{apiKey}"
 
-script = exceptioScriptTag()
-
-apiKey = script.getAttribute 'data-api-key'
-application = script.getAttribute 'data-application'
-debug = /true/.test script.getAttribute 'data-debug'
-
-window.ExceptIO =
-  log: (exception, environment = "production", params = {}, session = {}, request_url = window.location.href) ->
-    xhr = httpRequest()
-    xhr.open 'POST', url
-    xhr.setRequestHeader 'Content-Type', 'application/x-www-form-urlencoded'
-    xhr.send encode
+ExceptIO =
+  apiKey: ""
+  application: ""
+  debug: false
+  environment: 'production'
+  configure: (@apiKey, @application, @debug = false, @environment = 'production') ->
+    console.log 'configuring', arguments
+  log: (exception, params = {}, session = {}, request_url = window.location.href) ->
+    body = encode
       error:
         message: exception # exception.message
         backtrace: '' # exception.backtrac
         type: '' # exception.class.name
-        environment: environment
+        environment: @environment
         params: params
         session: session
         request_url: request_url
+    if @debug
+      console.log url(@application), body
+    else
+      xhr = httpRequest()
+      xhr.open 'POST', url(@application, @apiKey)
+      xhr.setRequestHeader 'Content-Type', 'application/x-www-form-urlencoded'
+      xhr.send body
+
+
+if script = exceptioScriptTag()
+  ExceptIO.configure script.getAttribute('data-api-key'),
+                     script.getAttribute('data-application'),
+                     /true/.test(script.getAttribute('data-debug'))
+
+window.ExceptIO = ExceptIO
