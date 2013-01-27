@@ -1,0 +1,10 @@
+# project specific .vimrc
+.vimrc
+
+# A few things added to help testing.
+.rvmrc
+.powrc
+config.ru
+Gemfile
+Gemfile.lock
+index.html
