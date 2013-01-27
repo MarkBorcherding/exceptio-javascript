@@ -68,11 +68,11 @@
     application: "",
     debug: false,
     environment: 'production',
-    configure: function(appKey, application, debug, environment) {
+    configure: function(appKey, application, environment, debug) {
       this.appKey = appKey;
       this.application = application;
-      this.debug = debug != null ? debug : false;
       this.environment = environment != null ? environment : 'production';
+      this.debug = debug != null ? debug : false;
     },
     log: function(error, file, line) {
       var backtrace, body, message, request_url, type, xhr, _ref;
@@ -103,7 +103,7 @@
   };
 
   if (script = exceptioScriptTag()) {
-    ExceptIO.configure(script.getAttribute('data-app-key'), script.getAttribute('data-application'), /true/.test(script.getAttribute('data-debug')));
+    ExceptIO.configure(script.getAttribute('data-app-key'), script.getAttribute('data-application'), script.getAttribute('data-environment'), /true/.test(script.getAttribute('data-debug')));
   }
 
   window.onerror = function(message, file, line) {

@@ -37,7 +37,7 @@ ExceptIO =
   application: ""
   debug: false
   environment: 'production'
-  configure: (@appKey, @application, @debug = false, @environment = 'production') ->
+  configure: (@appKey, @application, @environment = 'production', @debug = false) ->
   log: (error, file = error.file, line = error.line) ->
     request_url = window.location.href
 
@@ -62,6 +62,7 @@ ExceptIO =
 if script = exceptioScriptTag()
   ExceptIO.configure script.getAttribute('data-app-key'),
                      script.getAttribute('data-application'),
+                     script.getAttribute('data-environment'),
                      /true/.test(script.getAttribute('data-debug'))
 
 window.onerror = (message, file, line) ->
