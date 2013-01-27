@@ -36,56 +36,56 @@
       var _results;
       _results = [];
       for (prop in obj) {
-        _results.push("" + (encodeURIComponent(prop)) + "=" + (encodeURIComponent(obj[prop])));
+        _results.push("error[" + (encodeURIComponent(prop)) + "]=" + (encodeURIComponent(obj[prop])));
       }
       return _results;
     })();
     return values.join("&");
   };
 
-  url = function(application, apiKey) {
-    return "https://except.io/applications/" + application + "/errors?api_key=" + apiKey;
+  url = function(application, appKey) {
+    return "http://except.io/applications/" + application + "/errors?app_key=" + appKey;
   };
 
   ExceptIO = {
-    apiKey: "",
+    appKey: "",
     application: "",
     debug: false,
     environment: 'production',
-    configure: function(apiKey, application, debug, environment) {
-      this.apiKey = apiKey;
+    configure: function(appKey, application, debug, environment) {
+      this.appKey = appKey;
       this.application = application;
       this.debug = debug != null ? debug : false;
       this.environment = environment != null ? environment : 'production';
-      return console.log('configuring', arguments);
     },
-    log: function(exception, params, session, request_url) {
-      var body, xhr;
-      if (params == null) {
-        params = {};
+    log: function(error, file, line) {
+      var backtrace, body, message, request_url, type, xhr, _ref;
+      if (file == null) {
+        file = error.file;
       }
-      if (session == null) {
-        session = {};
+      if (line == null) {
+        line = error.line;
       }
-      if (request_url == null) {
-        request_url = window.location.href;
+      request_url = window.location.href;
+      message = (error != null ? error.message : void 0) || error;
+      type = error != null ? (_ref = error.constructor) != null ? _ref.name : void 0 : void 0;
+      if (type === 'String') {
+        type = '';
       }
+      backtrace = error.stack != null ? error.stack : (file != null) || (line != null) ? "" + file + ":" + line : 'No Backtrace';
       body = encode({
-        error: {
-          message: exception,
-          backtrace: '',
-          type: '',
-          environment: this.environment,
-          params: params,
-          session: session,
-          request_url: request_url
-        }
+        message: message,
+        backtrace: backtrace,
+        type: type,
+        environment: this.environment,
+        request_url: request_url
       });
       if (this.debug) {
-        return console.log(url(this.application), body);
+        return console.log(url(this.application, this.appKey), body);
       } else {
+        console.log('logging error', error, body);
         xhr = httpRequest();
-        xhr.open('POST', url(this.application, this.apiKey));
+        xhr.open('POST', url(this.application, this.appKey));
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         return xhr.send(body);
       }
@@ -93,8 +93,12 @@
   };
 
   if (script = exceptioScriptTag()) {
-    ExceptIO.configure(script.getAttribute('data-api-key'), script.getAttribute('data-application'), /true/.test(script.getAttribute('data-debug')));
+    ExceptIO.configure(script.getAttribute('data-app-key'), script.getAttribute('data-application'), /true/.test(script.getAttribute('data-debug')));
   }
+
+  window.onerror = function(message, file, line) {
+    return ExceptIO.log(message, file, line);
+  };
 
   window.ExceptIO = ExceptIO;
 
