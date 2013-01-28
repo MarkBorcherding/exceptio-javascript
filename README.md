@@ -22,12 +22,17 @@ ExceptIO.log('testing raw call');
 try {
   caught_in_a_catch_block();
 } catch (e) {
-  console.log(e.stack);
   ExceptIO.log(e);
 }
 
 caught_by_window_onerror();
 ```
+
+## Todo's
+
+* Replace almost everything with [TraceKit](https://github.com/occ/TraceKit)
+* Allow attching custom data on an `Error`
+
 
 ## License
 
